@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DISK='/dev/sda'
-FQDN='vagrant-arch.vagrantup.com'
+FQDN='vagrant-arch-chef.vagrantup.com'
 KEYMAP='us'
 LANGUAGE='en_US.UTF-8'
 PASSWORD=$(/usr/bin/openssl passwd -crypt 'vagrant')
@@ -10,6 +10,8 @@ TIMEZONE='UTC'
 CONFIG_SCRIPT='/usr/local/bin/arch-config.sh'
 ROOT_PARTITION="${DISK}1"
 TARGET_DIR='/mnt'
+
+CHEF_VERSION=12.2.1
 
 echo "==> clearing partition table on ${DISK}"
 /usr/bin/sgdisk --zap ${DISK}
@@ -77,9 +79,24 @@ cat <<-EOF > "${TARGET_DIR}${CONFIG_SCRIPT}"
 	/usr/bin/chown vagrant:users /home/vagrant/.ssh/authorized_keys
 	/usr/bin/chmod 0600 /home/vagrant/.ssh/authorized_keys
 
+        # Install Chef
+        pacman -S --noprogressbar --noconfirm --needed wget base-devel
+        mkdir -p /tmp/build
+        chown nobody:nobody -R /tmp/build
+        chmod 775 -R /tmp/build
+        echo "nobody ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+        cd /tmp/build
+        sudo -u nobody wget https://aur.archlinux.org/packages/ru/ruby-bundler/ruby-bundler.tar.gz
+        sudo -u nobody tar -xzvf ruby-bundler.tar.gz
+        cd ruby-bundler
+        sudo -u nobody makepkg -i -s -f --noconfirm --noprogressbar
+        gem install chef --version ${CHEF_VERSION} --no-user-install
+        sed -i '/nobody ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers
+
 	# clean up
 	/usr/bin/pacman -Rcns --noconfirm gptfdisk
 	/usr/bin/pacman -Scc --noconfirm
+
 EOF
 
 echo '==> entering chroot and configuring system'
