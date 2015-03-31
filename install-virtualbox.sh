@@ -92,6 +92,7 @@ cat <<-EOF > "${TARGET_DIR}${CONFIG_SCRIPT}"
         sudo -u nobody makepkg -i -s -f --noconfirm --noprogressbar
         gem install chef --version ${CHEF_VERSION} --no-user-install
         sed -i '/nobody ALL=(ALL) NOPASSWD: ALL/d' /etc/sudoers
+        echo "gem: --no-user-install" > /etc/gemrc
 
 	# clean up
 	/usr/bin/pacman -Rcns --noconfirm gptfdisk
