@@ -80,7 +80,7 @@ cat <<-EOF > "${TARGET_DIR}${CONFIG_SCRIPT}"
 	/usr/bin/chmod 0600 /home/vagrant/.ssh/authorized_keys
 
         # Install Chef
-        pacman -S --noprogressbar --noconfirm --needed wget base-devel
+        pacman -S --noprogressbar --noconfirm --needed wget base-devel net-tools
         mkdir -p /tmp/build
         chown nobody:nobody -R /tmp/build
         chmod 775 -R /tmp/build
